@@ -1,19 +1,27 @@
-const io = require('socket.io-client')('http://localhost:8080');
-const { BlyncParty } = require('blync-party');
-io.connect();
+const io = require("socket.io-client")("http://blync-party.herokuapp.com/");
+const { default: axios } = require("axios");
+const readline = require("readline");
 
-const party = new BlyncParty();
-
-io.on('color', (body) => {
-    const { color } = JSON.parse(body);
-    party.setColor(color);
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
 });
 
-io.on('pattern', (body) => {
-    const { pattern } = JSON.parse(body);
-    try {
-        party.runPattern(pattern);
-    } catch (ex) {
-        console.log(ex);
-    }
+io.connect();
+
+io.on("pattern", (body) => {
+  const { pattern } = JSON.parse(body);
+  console.log(pattern);
+});
+let username;
+
+rl.on("line", (answer) => {
+  axios.post("http://blync-party.herokuapp.com/set-pattern", {
+    pattern: `${username}: ${answer}`,
+  });
+});
+
+rl.question("What is your username?\n", (name) => {
+  username = name;
+  console.log("Alright, you're", username);
 });
